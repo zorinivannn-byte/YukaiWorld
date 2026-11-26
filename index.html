@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YukaiWorld</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080912;color:#fff;font-family:Arial,sans-serif;
+ min-height:100vh;display:grid;place-items:center;padding:16px
+}
+.card{
+ width:100%;max-width:460px;background:#111321;border:1px solid #292d45;
+ border-radius:22px;padding:25px;box-shadow:0 0 45px #795cff25
+}
+.logo{text-align:center;font-size:30px;font-weight:900;letter-spacing:3px;color:#a99aff}
+.sub{text-align:center;color:#858aa8;margin:10px 0 25px}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+button{cursor:pointer;border:0;border-radius:11px;padding:13px;font-weight:bold}
+.tabs button{flex:1;background:#1b1e30;color:#aaa}
+.tabs button.active,.primary{background:#795cff;color:white}
+input{
+ width:100%;padding:14px;margin:7px 0;border-radius:11px;
+ border:1px solid #30344d;background:#090b16;color:white;outline:none
+}
+input:focus{border-color:#8c75ff}
+.primary{width:100%;margin-top:10px}
+.hidden{display:none!important}
+.notice{min-height:20px;color:#ff8d9d;text-align:center;font-size:13px;margin:12px 0}
+.profile{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.profile small{color:#999}
+.logout{background:#25283c;color:white}
+.chat{border:1px solid #30344d;border-radius:14px;overflow:hidden}
+.chat-head{background:#1b1e30;padding:14px;font-weight:bold}
+.chat-head span{color:#8dffbd;font-size:12px}
+.messages{height:330px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.message{background:#202338;border-radius:12px;padding:10px;max-width:90%;overflow-wrap:anywhere}
+.mine{align-self:flex-end;background:#4e3d91}
+.admin{border:1px solid #8d75ff}
+.name{font-size:12px;color:#b8aaff;margin-bottom:5px}
+.text{white-space:pre-wrap;font-size:14px}
+.chat-form{display:flex;gap:8px;padding:10px;background:#171a29}
+.chat-form input{margin:0;min-width:0}
+.chat-form button{background:#795cff;color:white}
+.footer{text-align:center;color:#777e9b;font-size:12px;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="card">
+ <div class="logo">YUKAIWORLD</div>
+ <div class="sub">Твой мир начинается здесь</div>
+
+ <section id="authPanel">
+  <div class="tabs">
+   <button id="loginTab" class="active" type="button">Вход</button>
+   <button id="registerTab" type="button">Регистрация</button>
+  </div>
+
+  <form id="authForm">
+   <input id="login" placeholder="Логин" autocomplete="username" required>
+   <input id="password" type="password" placeholder="Пароль" autocomplete="current-password" required>
+   <input id="repeatPassword" type="password" placeholder="Повторите пароль" class="hidden" autocomplete="new-password">
+   <button class="primary" id="submitButton" type="submit">Войти</button>
+  </form>
+  <div class="notice" id="authNotice"></div>
+  <div class="footer">Minecraft 1.21.4 · YukaiWorld</div>
+ </section>
+
+ <section id="chatPanel" class="hidden">
+  <div class="profile">
+   <div>
+    <b id="usernameLabel"></b><br>
+    <small id="roleLabel">Игрок</small>
+   </div>
+   <button class="logout" id="logoutButton" type="button">Выйти</button>
+  </div>
+
+  <div class="chat">
+   <div class="chat-head">Общий чат <span>● ONLINE</span></div>
+   <div class="messages" id="messages"></div>
+   <form class="chat-form" id="chatForm">
+    <input id="chatInput" placeholder="Написать сообщение..." maxlength="500" required>
+    <button type="submit">➤</button>
+   </form>
+  </div>
+  <div class="notice" id="chatNotice"></div>
+ </section>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+ apiKey: "AIzaSyA40ZJv37OmsWrpQ097uX720pU7kZRIBGU",
+ authDomain: "yukaiworld.firebaseapp.com",
+ databaseURL: "https://yukaiworld-default-rtdb.firebaseio.com",
+ projectId: "yukaiworld",
+ storageBucket: "yukaiworld.firebasestorage.app",
+ messagingSenderId: "587554447138",
+ appId: "1:587554447138:web:c6127ab68acaea76b78f7b",
+ measurementId: "G-G89WL262KY"
+};
+
+// Вставь UID админского аккаунта после регистрации
+const ADMIN_UID = "ВСТАВЬ_UID_АДМИНА";
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+const $ = id => document.getElementById(id);
+let registering = false;
+let profile = null;
+let messagesRef = null;
+let messagesListener = null;
+
+function setMode(register){
+ registering = register;
+ $("repeatPassword").classList.toggle("hidden",!register);
+ $("submitButton").textContent = register ? "Создать аккаунт" : "Войти";
+ $("loginTab").classList.toggle("active",!register);
+ $("registerTab").classList.toggle("active",register);
+ $("authNotice").textContent = "";
+}
+
+$("loginTab").onclick = () => setMode(false);
+$("registerTab").onclick = () => setMode(true);
+
+function emailFromLogin(name){
+ return name.toLowerCase() + "@yukaiworld.firebaseapp.com";
+}
+
+$("authForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+
+ const name=$("login").value.trim().toLowerCase();
+ const pass=$("password").value;
+ const repeat=$("repeatPassword").value;
+ const notice=$("authNotice");
+
+ notice.textContent="";
+
+ if(!/^[a-z0-9_.-]{3,20}$/.test(name)){
+  notice.textContent="Логин: 3–20 символов, латиница, цифры, . _ -";
+  return;
+ }
+
+ if(pass.length<6){
+  notice.textContent="Пароль должен быть минимум 6 символов";
+  return;
+ }
+
+ if(registering && pass!==repeat){
+  notice.textContent="Пароли не совпадают";
+  return;
+ }
+
+ $("submitButton").disabled=true;
+
+ try{
+  if(registering){
+   const result=await auth.createUserWithEmailAndPassword(
+    emailFromLogin(name),pass
+   );
+
+   await db.ref("users/"+result.user.uid).set({
+    username:name,
+    createdAt:firebase.database.ServerValue.TIMESTAMP
+   });
+  }else{
+   await auth.signInWithEmailAndPassword(emailFromLogin(name),pass);
+  }
+ }catch(error){
+  const errors={
+   "auth/email-already-in-use":"Логин уже занят",
+   "auth/invalid-credential":"Неверный логин или пароль",
+   "auth/weak-password":"Пароль слишком простой",
+   "auth/operation-not-allowed":"Включи Email/Password в Firebase",
+   "auth/network-request-failed":"Проверь интернет"
+  };
+  notice.textContent=errors[error.code]||error.message;
+ }finally{
+  $("submitButton").disabled=false;
+ }
+});
+
+function stopChat(){
+ if(messagesRef && messagesListener){
+  messagesRef.off("value",messagesListener);
+ }
+ messagesRef=null;
+ messagesListener=null;
+}
+
+$("logoutButton").onclick=async()=>{
+ stopChat();
+ await auth.signOut();
+};
+
+auth.onAuthStateChanged(async user=>{
+ if(!user){
+  $("authPanel").classList.remove("hidden");
+  $("chatPanel").classList.add("hidden");
+  stopChat();
+  return;
+ }
+
+ try{
+  const snap=await db.ref("users/"+user.uid).once("value");
+  const data=snap.val()||{};
+
+  profile={
+   uid:user.uid,
+   username:data.username||user.email.split("@")[0],
+   admin:user.uid===ADMIN_UID
+  };
+
+  $("usernameLabel").textContent=profile.username;
+  $("roleLabel").textContent=profile.admin
+   ?"Администратор YukaiWorld"
+   :"Игрок YukaiWorld";
+
+  $("authPanel").classList.add("hidden");
+  $("chatPanel").classList.remove("hidden");
+
+  startChat();
+ }catch(error){
+  $("authNotice").textContent="Ошибка загрузки профиля: "+error.message;
+ }
+});
+
+function startChat(){
+ stopChat();
+
+ messagesRef=db.ref("messages").limitToLast(50);
+
+ messagesListener=snapshot=>{
+  const container=$("messages");
+  container.innerHTML="";
+
+  const list=[];
+  snapshot.forEach(child=>list.push(child.val()));
+  list.sort((a,b)=>(a.time||0)-(b.time||0));
+
+  list.forEach(msg=>{
+   const box=document.createElement("div");
+   box.className="message";
+
+   if(msg.uid===profile.uid)box.classList.add("mine");
+   if(msg.uid===ADMIN_UID)box.classList.add("admin");
+
+   const name=document.createElement("div");
+   name.className="name";
+   name.textContent=(msg.username||"Игрок")+
+    (msg.uid===ADMIN_UID?" · АДМИН":"");
+
+   const text=document.createElement("div");
+   text.className="text";
+   text.textContent=msg.text||"";
+
+   box.append(name,text);
+   container.appendChild(box);
+  });
+
+  container.scrollTop=container.scrollHeight;
+ };
+
+ messagesRef.on("value",messagesListener,error=>{
+  $("chatNotice").textContent="Ошибка доступа к чату: "+error.message;
+ });
+}
+
+$("chatForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+
+ if(!profile)return;
+
+ const text=$("chatInput").value.trim();
+ if(!text)return;
+
+ try{
+  await db.ref("messages").push({
+   uid:profile.uid,
+   username:profile.username,
+   text:text,
+   time:firebase.database.ServerValue.TIMESTAMP
+  });
+
+  $("chatInput").value="";
+  $("chatNotice").textContent="";
+ }catch(error){
+  $("chatNotice").textContent="Ошибка отправки: "+error.message;
+ }
+});
+</script>
+</body>
+</html>
