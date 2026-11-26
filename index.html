@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YukaiWorld — Minecraft проект</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg:#080910;
+  --panel:#11131f;
+  --panel2:#171a29;
+  --accent:#a855f7;
+  --accent2:#6d4aff;
+  --text:#f5f3ff;
+  --muted:#9694aa;
+  --border:rgba(255,255,255,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+}
+a{text-decoration:none;color:inherit}
+button{font:inherit}
+.container{width:min(1160px,92%);margin:auto}
+header{
+  position:sticky;top:0;z-index:20;
+  background:rgba(8,9,16,.88);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+}
+.nav{
+  height:76px;display:flex;align-items:center;
+  justify-content:space-between;gap:20px;
+}
+.logo{
+  font-family:Unbounded,sans-serif;
+  font-weight:800;font-size:20px;letter-spacing:-1px;
+}
+.logo span{color:var(--accent)}
+.nav-links{display:flex;gap:27px;color:#c2bfd2;font-size:13px}
+.nav-links a:hover{color:white}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:9px;padding:13px 19px;border-radius:11px;
+  font-weight:700;font-size:13px;transition:.2s;
+  border:1px solid var(--border);cursor:pointer;
+}
+.btn:hover{transform:translateY(-2px)}
+.primary{
+  color:white;background:linear-gradient(110deg,#9348e9,#6548e9);
+  border:0;box-shadow:0 8px 30px #743de933;
+}
+.secondary{background:#ffffff09;color:#fff}
+.hero{
+  position:relative;overflow:hidden;
+  padding:105px 0 85px;
+  background:
+    radial-gradient(ellipse at 80% 20%,#7439c42b,transparent 40%),
+    radial-gradient(ellipse at 15% 80%,#4931a522,transparent 40%);
+}
+.hero:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(#ffffff06 1px,transparent 1px),
+  linear-gradient(90deg,#ffffff06 1px,transparent 1px);
+  background-size:55px 55px;
+  mask-image:linear-gradient(to bottom,black,transparent);
+}
+.hero-content{position:relative;max-width:760px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  border:1px solid #a855f744;background:#a855f710;
+  color:#c99cff;padding:9px 13px;border-radius:30px;
+  font-size:11px;font-weight:800;letter-spacing:1px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:#a855f7}
+h1{
+  font-family:Unbounded,sans-serif;
+  font-size:clamp(38px,7vw,76px);
+  line-height:1.12;letter-spacing:-4px;
+  margin:27px 0 20px;
+}
+h1 span{
+  background:linear-gradient(90deg,#d6aaff,#8b62ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p{
+  max-width:590px;color:var(--muted);
+  font-size:16px;line-height:1.8;
+}
+.hero-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+.section{padding:76px 0}
+.section-head{margin-bottom:28px}
+.section-head small{
+  color:#b17bff;font-weight:800;letter-spacing:2px;font-size:10px;
+}
+.section-head h2{
+  font-family:Unbounded,sans-serif;
+  font-size:clamp(24px,4vw,35px);margin:12px 0;
+  letter-spacing:-1.5px;
+}
+.section-head p{color:var(--muted);font-size:14px;line-height:1.7}
+.grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;
+}
+.card{
+  background:linear-gradient(145deg,#171927,#10121c);
+  border:1px solid var(--border);border-radius:19px;
+  padding:25px;position:relative;overflow:hidden;
+  transition:.25s;
+}
+.card:hover{border-color:#a855f755;transform:translateY(-3px)}
+.card-icon{
+  width:47px;height:47px;display:grid;place-items:center;
+  border-radius:13px;background:#a855f71b;
+  color:#c99cff;font-size:22px;margin-bottom:20px;
+}
+.card h3{font-size:19px;margin:0 0 10px}
+.card p{color:var(--muted);font-size:13px;line-height:1.75;margin:0 0 20px}
+.card .btn{width:100%}
+.status{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 11px;border-radius:30px;
+  color:#ffc66d;background:#ffb52b12;
+  border:1px solid #ffb52b30;font-size:11px;font-weight:800;
+}
+.status i{width:6px;height:6px;border-radius:50%;background:#ffb52b}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.step{
+  background:var(--panel);border:1px solid var(--border);
+  padding:23px;border-radius:16px;
+}
+.step-number{
+  font-family:Unbounded,sans-serif;color:#a855f7;
+  font-size:25px;margin-bottom:20px;
+}
+.step h3{font-size:15px;margin:0 0 9px}
+.step p{font-size:12px;line-height:1.7;color:var(--muted);margin:0}
+.forum-banner{
+  background:linear-gradient(110deg,#28174a,#151329 65%,#24164a);
+  border:1px solid #a855f744;border-radius:22px;
+  padding:34px;display:flex;align-items:center;
+  justify-content:space-between;gap:25px;
+}
+.forum-banner h2{
+  font-family:Unbounded,sans-serif;font-size:24px;margin:0 0 12px;
+}
+.forum-banner p{color:#b9b1ce;font-size:13px;line-height:1.7;margin:0}
+.news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.news-card{
+  padding:22px;background:var(--panel);
+  border:1px solid var(--border);border-radius:16px;
+}
+.news-card small{color:#b17bff;font-weight:800;font-size:10px}
+.news-card h3{font-size:15px;margin:13px 0 9px}
+.news-card p{font-size:12px;line-height:1.7;color:var(--muted);margin:0}
+footer{border-top:1px solid var(--border);padding:30px 0;color:var(--muted);font-size:12px}
+.footer-inner{display:flex;justify-content:space-between;gap:20px;align-items:center}
+.footer-logo{font-family:Unbounded,sans-serif;color:white;font-weight:800}
+.footer-logo span{color:var(--accent)}
+.mobile-menu{display:none}
+@media(max-width:760px){
+  .nav-links{display:none}
+  .nav{height:66px}
+  .nav-actions .secondary{display:none}
+  .hero{padding:75px 0 65px}
+  h1{letter-spacing:-2px}
+  .grid,.steps,.news-grid{grid-template-columns:1fr}
+  .forum-banner{align-items:flex-start;flex-direction:column}
+  .footer-inner{align-items:flex-start;flex-direction:column}
+  .section{padding:55px 0}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a href="#" class="logo">YUKAI<span>WORLD</span></a>
+    <nav class="nav-links">
+      <a href="#home">Главная</a>
+      <a href="#start">Как начать</a>
+      <a href="#about">О проекте</a>
+      <a href="#news">Новости</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn secondary" href="#start">Как зайти</a>
+      <a class="btn primary" href="https://discord.gg/PshxNFR8bG" target="_blank">Discord ↗</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="container">
+    <div class="hero-content">
+      <div class="eyebrow"><span class="dot"></span> MINECRAFT PROJECT</div>
+      <h1>ТВОЙ МИР.<br><span>ТВОИ ПРАВИЛА.</span></h1>
+      <p>
+        YukaiWorld — Minecraft-проект, в котором тебя ждут новые
+        приключения, интересное сообщество и незабываемая атмосфера.
+        Присоединяйся к нашему сообществу!
+      </p>
+      <div class="hero-buttons">
+        <a class="btn primary" href="https://discord.gg/PshxNFR8bG" target="_blank">Присоединиться к Discord ↗</a>
+        <a class="btn secondary" href="#start">Как начать играть ↓</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="start">
+  <div class="container">
+    <div class="section-head">
+      <small>ПРИСОЕДИНЯЙСЯ</small>
+      <h2>С чего начать?</h2>
+      <p>Всё самое важное для будущих игроков YukaiWorld.</p>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <div class="card-icon">✦</div>
+        <span class="status"><i></i> Сообщество открыто</span>
+        <h3 style="margin-top:17px">Discord YukaiWorld</h3>
+        <p>
+          Заходи на наш Discord-сервер, следи за новостями,
+          общайся с игроками и узнавай первым о запуске проекта.
+        </p>
+        <a class="btn primary" href="https://discord.gg/PshxNFR8bG" target="_blank">Перейти в Discord ↗</a>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">⚒</div>
+        <span class="status"><i></i> Сервер в разработке</span>
+        <h3 style="margin-top:17px">Как зайти на сервер?</h3>
+        <p>
+          Мы готовим сервер к открытию. Версия Minecraft,
+          IP-адрес и подробная инструкция появятся здесь после запуска.
+        </p>
+        <a class="btn secondary" href="#about">Подробнее о проекте</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#0c0d16">
+  <div class="container">
+    <div class="section-head">
+      <small>ИНСТРУКЦИЯ</small>
+      <h2>Как присоединиться?</h2>
+      <p>Пока сервер находится в разработке, ты уже можешь стать частью сообщества.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">01</div>
+        <h3>Открой Discord</h3>
+        <p>Перейди на наш Discord-сервер по специальной ссылке.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">02</div>
+        <h3>Следи за новостями</h3>
+        <p>Узнавай о разработке, обновлениях и дате открытия.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">03</div>
+        <h3>Заходи в игру</h3>
+        <p>После открытия появятся IP сервера и инструкция по подключению.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="container">
+    <div class="section-head">
+      <small>О ПРОЕКТЕ</small>
+      <h2>Добро пожаловать в YukaiWorld</h2>
+      <p>
+        Мы создаём Minecraft-проект с собственным стилем,
+        сообществом и атмосферой. Сейчас команда работает над сервером,
+        чтобы подготовить его к запуску.
+      </p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🌌</div>
+        <h3>Новый игровой мир</h3>
+        <p>Нас ждёт отдельный игровой мир, который мы постепенно готовим к открытию.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">♟</div>
+        <h3>Сообщество игроков</h3>
+        <p>Общайся, знакомься с участниками и участвуй в жизни проекта.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="news">
+  <div class="container">
+    <div class="section-head">
+      <small>ПОСЛЕДНИЕ СОБЫТИЯ</small>
+      <h2>Новости проекта</h2>
+      <p>Здесь будут появляться важные новости YukaiWorld.</p>
+    </div>
+    <div class="news-grid">
+      <article class="news-card">
+        <small>РАЗРАБОТКА</small>
+        <h3>Создание сервера</h3>
+        <p>Мы работаем над подготовкой игрового сервера к запуску.</p>
+      </article>
+      <article class="news-card">
+        <small>СООБЩЕСТВО</small>
+        <h3>Наш Discord</h3>
+        <p>Присоединяйся к сообществу и следи за новостями проекта.</p>
+      </article>
+      <article class="news-card">
+        <small>СКОРО</small>
+        <h3>Больше информации</h3>
+        <p>Подробности об открытии и возможностях сервера появятся позже.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="forum-banner">
+      <div>
+        <h2>Форум YukaiWorld</h2>
+        <p>
+          Обсуждения, новости, правила и общение игроков.
+          Отдельный форум находится в разработке.
+        </p>
+      </div>
+      <a class="btn primary" href="FORUM_LINK_HERE" id="forumButton">Перейти на форум ↗</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-logo">YUKAI<span>WORLD</span></div>
+    <div>© 2026 YukaiWorld. Все права защищены.</div>
+    <a href="https://discord.gg/PshxNFR8bG" target="_blank">Наш Discord ↗</a>
+  </div>
+</footer>
+
+<script>
+document.getElementById("forumButton").addEventListener("click", function(event) {
+  if (this.getAttribute("href") === "FORUM_LINK_HERE") {
+    event.preventDefault();
+    alert("Ссылка на форум появится после его создания!");
+  }
+});
+</script>
+
+</body>
+</html>
